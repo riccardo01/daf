@@ -18,9 +18,12 @@ import Versions._
 import com.typesafe.sbt.packager.docker.Cmd
 import sbt.Keys.resolvers
 
+organization in ThisBuild := "it.gov.daf"
 name := "daf-storage-manager"
 
 version := "1.0-SNAPSHOT"
+
+scalaVersion in ThisBuild := "2.11.8"
 
 scalacOptions ++= Seq(
   "-deprecation",
@@ -39,9 +42,24 @@ scalacOptions ++= Seq(
 wartremoverErrors ++= Warts.allBut(Wart.Equals)
 wartremoverExcluded ++= routes.in(Compile).value
 
-lazy val root = (project in file(".")).enablePlugins(PlayScala, AutomateHeaderPlugin, DockerPlugin)
+lazy val client = (project in file("client")).
+  settings(Seq(
+    name := "daf-storage-manager-client",
+    swaggerGenerateClient := true,
+    swaggerClientCodeGenClass := new it.gov.daf.swaggergenerators.DafClientGenerator,
+    swaggerCodeGenPackage := "it.gov.daf.storagemanager",
+    swaggerModelFilesSplitting := "oneFilePerModel",
+    swaggerSourcesDir := file(s"${baseDirectory.value}/../conf"),
+    libraryDependencies ++= Seq(
+      "com.typesafe.play" %% "play-json" % playVersion,
+      "com.typesafe.play" %% "play-ws" %  playVersion
+    )
+  )).
+  enablePlugins(SwaggerCodegenPlugin)
 
-scalaVersion := "2.11.8"
+lazy val root = (project in file(".")).
+  enablePlugins(PlayScala, AutomateHeaderPlugin, DockerPlugin)
+  .dependsOn(client).aggregate(client)
 
 val hadoopExcludes =
   (moduleId: ModuleID) => moduleId.

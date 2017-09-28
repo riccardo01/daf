@@ -31,7 +31,6 @@ import scala.collection.JavaConverters._
   )
 )
 object WithSecurityInfoApiListingCache {
-  var cache: Option[Swagger] = None
 
   def listing(docRoot: String, host: String): Option[Swagger] = {
     Logger("swagger").debug("Loading API metadata")
@@ -39,17 +38,16 @@ object WithSecurityInfoApiListingCache {
     val scanner = ScannerFactory.getScanner
     val classes: java.util.Set[Class[_]] = scanner.classes()
     val reader = new PlayReader(null)
-    var swagger = reader.read(classes)
+    val swaggerFromClases = reader.read(classes)
 
-    scanner match {
-      case config: SwaggerConfig =>
-        swagger = config.configure(swagger)
-      case _ =>
-      // no config, do nothing
+    val swagger = scanner match {
+      case config: SwaggerConfig => config.configure(swaggerFromClases)
+      case _ => swaggerFromClases
     }
-    val cache = Some(swagger)
+    val cache = Option(swagger)
     cache.fold(())(_.setHost(null))
     cache.fold(())(_.setSecurityDefinitions(Map[String, SecuritySchemeDefinition]("basicAuth" -> new BasicAuthDefinition()).asJava))
     cache
   }
+
 }

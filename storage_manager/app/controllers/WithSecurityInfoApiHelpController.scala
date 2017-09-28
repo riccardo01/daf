@@ -47,10 +47,7 @@ class WithSecurityInfoApiHelpController extends ApiHelpController {
     val f = new SpecFilter
     val l: Option[Swagger] = WithSecurityInfoApiListingCache.listing(docRoot, host)
 
-    val specs: Swagger = l match {
-      case Some(m) => m
-      case _ => new Swagger()
-    }
+    val specs: Swagger = l.getOrElse(new Swagger)
 
     val hasFilter = Option(FilterFactory.getFilter)
     hasFilter match {

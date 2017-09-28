@@ -1,6 +1,6 @@
 object Versions {
 
-  val hadoopVersion = "2.6.0-cdh5.9.0"
+  val hadoopVersion = "2.6.0-cdh5.12.0"
 
   val sparkVersion = "2.1.0.cloudera1"
 
